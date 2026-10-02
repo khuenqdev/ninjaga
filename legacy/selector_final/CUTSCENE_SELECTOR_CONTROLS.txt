@@ -1,0 +1,8 @@
+NINJA GAIDEN VIETNAMESE — CUTSCENE SELECTOR
+
+At the static title screen:
+  SELECT       arm/disarm selector
+  LEFT/RIGHT   previous/next cutscene (0..13, wraps)
+  START        play selected cutscene
+
+When disarmed, START behaves normally.

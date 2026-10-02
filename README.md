@@ -1,60 +1,65 @@
-# Ninja Gaiden NES — Vietnamese translation
+# Ninja Gaiden NES — Vietnamese Translation + SELECT Cutscene Playlist
 
-This package contains the reproducible Vietnamese build and the final HUD-glyph fix.
+Consolidated project pack containing the Vietnamese translation, character/control mapping, CDL data, IPS patches, SELECT cutscene-playlist hack, reproducible build/verification scripts, and earlier reference builds.
 
-## HUD pink-background fix
+## Current release artifacts
 
-The previous build placed Vietnamese dialogue glyphs correctly in the status-bar CHR page, but encoded the generated glyph background as palette index 1. The gameplay HUD uses the font's alternate 2bpp convention, so those pixels appeared as the emulator's pink background.
+`roms/Ninja_Gaiden_Vietnamese_Final.nes` — known-good Vietnamese translation base ROM.
 
-The fix keeps the dialogue glyphs unchanged and creates eight HUD-only glyph tiles in previously blank tiles `F0-F7` of the status-bar font page. The static HUD/game-over/sound-test transmissions are then remapped to those codes.
+`roms/Ninja_Gaiden_Vietnamese_Cutscene_Playlist_SELECT_FIXED.nes` — latest experimental SELECT-playlist ROM candidate.
 
-HUD-only mapping:
+`patches/Ninja_Gaiden_Vietnamese_Final.ips` — translation IPS from the earlier translation project.
 
-- `F0` = Đ
-- `F1` = Ể
-- `F2` = À
-- `F3` = ê
-- `F4` = Ả
-- `F5` = Ờ
-- `F6` = Ị
-- `F7` = Ế
+`patches/Ninja_Gaiden_Vietnamese_Cutscene_Playlist_SELECT_FIXED.ips` — applies the SELECT playlist to the Vietnamese Final ROM.
 
-The HUD glyph background is encoded as palette index 3 rather than palette index 1, eliminating the pink tile background while leaving the normal dialogue font untouched.
+`data/Ninja_Gaiden_Vietnamese_Final.tbl` — current TBL mapping, including the Vietnamese glyph values and cutscene control codes.
+
+`data/translation_source.txt` — translation source.
+
+`data/vn_font_payload.chr` — Vietnamese glyph payload.
+
+`data/Ninja_Gaiden_Vietnamese_Cutscene_Selector_FINAL_USER.cdl` — latest CDL supplied by the user.
+
+`scripts/build_cutscene_playlist_select_fixed.py` — portable current playlist builder.
+`scripts/apply_ips.py` — standalone IPS applier.
+`scripts/verify_playlist_fixed.py` — integrity and IPS round-trip checker.
+
+`tools/fceumm_libretro.so` — supplied FCEUmm core used in earlier automated testing; optional.
+
+`legacy/` contains the previous selector, debug and playlist experiments and the reference translation project archive.
+
+## Intended current behavior
+
+At the static title screen, one SELECT press is intended to start the story cutscene playlist. There is no cutscene-number selection and no second START press in the intended interface.
+
+The current playlist ROM remains an experimental candidate because the user's latest manual test exposed title-screen/start-flow behavior that was not reproduced consistently by the automated test environment. The exact ROM/IPS pairing in this pack is verified byte-for-byte, but emulator/manual compatibility still requires confirmation.
 
 ## Rebuild
 
-```bash
-python3 build_portable.py \
-  --rom "Ninja Gaiden (USA).nes" \
-  --script translation_source.txt \
-  --output Ninja_Gaiden_Vietnamese_Final.nes \
-  --tbl Ninja_Gaiden_Vietnamese_Final.tbl
-```
-
-The build is deterministic for the supplied source ROM and translation source.
-
-## Apply patches
-
-Full patch (original ROM -> final Vietnamese ROM):
+From the project root:
 
 ```bash
-python3 apply_ips.py Ninja_Gaiden_Vietnamese_Final.ips \
-  "Ninja Gaiden (USA).nes" final.nes
+python3 scripts/build_cutscene_playlist_select_fixed.py
+python3 scripts/verify_playlist_fixed.py
 ```
 
-HUD-only patch (previous Vietnamese build -> corrected Vietnamese build):
+## Apply only the playlist patch
 
 ```bash
-python3 apply_ips.py Ninja_Gaiden_Vietnamese_HUD_Fix.ips \
-  Ninja_Gaiden_Vietnamese_Final_Previous.nes corrected.nes
+python3 scripts/apply_ips.py \
+  roms/Ninja_Gaiden_Vietnamese_Final.nes \
+  patches/Ninja_Gaiden_Vietnamese_Cutscene_Playlist_SELECT_FIXED.ips \
+  --output roms/Ninja_Gaiden_Vietnamese_Cutscene_Playlist_SELECT_FIXED_from_IPS.nes
 ```
 
-## Validation
+## Known hashes
 
-The final ROM remains 262,160 bytes. The cutscene pointer table at `0x152E0-0x153C1` is unchanged, and the 113 cutscene entries remain terminated.
+Vietnamese Final base: SHA-1 `53388f0909187f03d672a5acb3a95b23a6bebb74`, CRC32 `2B119A55`.
 
-The final build was reproduced from `build_portable.py` and compared byte-for-byte with the distributed final ROM.
+Current playlist candidate: SHA-1 `4b737cfa6e9dda81cf08dfc81b05a77a214f7a65`, CRC32 `1941CE7C`.
 
-## Emulator note
+The playlist IPS has three records and round-trips exactly to the ROM above when applied to the Vietnamese Final base.
 
-The ROM structure, CHR payload, HUD transmission bytes, patch application, and reproducibility were validated programmatically. Mesen was not available in the build environment, so live emulator execution was not performed here.
+## Supplemental HUD patches
+
+`patches/Ninja_Gaiden_Vietnamese_HUD_Fix.ips` and `patches/Ninja_Gaiden_Vietnamese_HUD_Title_Fix.ips` are included for completeness from earlier work. They are not part of the current recommended playlist build sequence and should not be stacked blindly onto `Ninja_Gaiden_Vietnamese_Final.nes` without checking their intended source ROM.
